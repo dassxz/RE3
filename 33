@@ -1,0 +1,27 @@
+    # process annotations
+    full_url = []
+    for _url in url:
+        if 'zhiyuan_objv2_train.tar.gz' in _url or \
+                'zhiyuan_objv2_val.json' in _url:
+            full_url.append(_url)
+        elif 'train' in _url:
+            for i in range(51):
+                full_url.append(f'{_url}patch{i}.tar.gz')
+        elif 'val/images/v1' in _url:
+            for i in range(16):
+                full_url.append(f'{_url}patch{i}.tar.gz')
+        elif 'val/images/v2' in _url:
+            for i in range(16, 44):
+                full_url.append(f'{_url}patch{i}.tar.gz')
+        else:
+            raise NotImplementedError
+
+    dir = Path(dir)
+    if threads > 1:
+        pool = ThreadPool(threads)
+        pool.imap(lambda x: download_single(*x), zip(full_url, repeat(dir)))
+        pool.close()
+        pool.join()
+    else:
+        for u in full_url:
+            download_single(u, dir)
